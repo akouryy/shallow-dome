@@ -14,4 +14,4 @@ ShallowDome::ConfigManager.load_configs
 
 c = ShallowDome::Client.new
 
-t = c.tweet "test tweet of シャロ"
+t = c.tweet "test"

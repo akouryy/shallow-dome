@@ -40,8 +40,6 @@ class ConfigClassGenerator
     @klass = Class.new(Config)
     @default = {}
     @klass.class_variable_set :@@default, @default
-    @arity = {}
-    @klass.class_variable_set :@@arity, @arity
     @name = name.freeze
     @@configs ||= {}
     @@configs[@name] = self
@@ -55,25 +53,32 @@ class ConfigClassGenerator
 
   ##
   # |name Symbol
+  # |array:? boolean
   # |arity:? <def ===(Integer)> | :zero_or_more | :one_or_more
   # |default:? object(&nil) | WillNotSet
   # => void
-  def add_config name, arity: 1, default: WillNotSet
+  def add_config name, multi: false, arity: 1, default: WillNotSet
     name = name.intern
     @default[name] = default if will_set? default
-    @arity[name] =
+    arity =
       case arity
         when :zero_or_more then (0..Float::Infinity)
         when :one_or_more  then (1..Float::Infinity)
         else arity
       end
-    arity = @klass.class_variable_get :@@arity
-    @klass.__send__ :define_method, name, &->(*vals) do
-      if arity[name] === vals.length
-        @setting[name] = vals
-      else
-        raise ArgumentError, "wrong number of arguments (#{vals.length} for #{arity[name]})"
+
+    raise ArgumentError, 'arity must be 1 when not multi' if multi && arity != 1
+
+    if multi
+      @klass.__send__ :define_method, name, &->(*vals) do
+        if arity === vals.length
+          @setting[name] = vals
+        else
+          raise ArgumentError, "wrong number of arguments (#{vals.length} for #{arity[name]})"
+        end
       end
+    else
+      @klass.__send__ :define_method, name, &->(val){ @setting[name] = val }
     end
   end
 
