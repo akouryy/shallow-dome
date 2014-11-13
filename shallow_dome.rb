@@ -14,6 +14,11 @@ ShallowDome::ConfigManager.load_configs
 
 c = ShallowDome::Client.new
 
-3.times do
-  c.tweet "3連ツイートのテスト", retry_with_space: true
+t = nil
+while gets
+  if $_.chomp.empty?
+    t = nil
+  else
+    t = c.tweet $_.encode("utf-8"), retry_with_space: true, reply: t
+  end
 end

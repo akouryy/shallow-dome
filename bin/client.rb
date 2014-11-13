@@ -43,10 +43,10 @@ module ShallowDome
       @client = Twitter::REST::Client.new (ConfigClassGenerator.get_one :oauth)
     end
 
-    def tweet message, retry_times: 0, retry_with_space: false
+    def tweet message, reply: nil, retry_times: 0, retry_with_space: false
       retry_count = 0
       begin
-        @client.update! message
+        @client.update! message, in_reply_to_status: reply
       rescue Twitter::Error::DuplicateStatus
         retry_count += 1
         if retry_count <= retry_times
