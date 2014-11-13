@@ -28,23 +28,17 @@ module ShallowDome
   end
 
   class Client
-    ClientOptions = %i:consumer_key consumer_secret access_token access_token_secret:
     ConfigManager::ConfigClasses << self
 
     def self.add_config
       oauth = ConfigClassGenerator.generate :oauth
-      ClientOptions.each do |config|
+      %i:consumer_key consumer_secret access_token access_token_secret:.each do |config|
         oauth.add_config config
       end
     end
 
     def initialize filepath = './config/oauth.rb'
-      config_f = ConfigClassGenerator.get_one :oauth
-      @client = Twitter::REST::Client.new do |config|
-        ClientOptions.each do |k|
-          config.__send__ k + ?=, *config_f[k]
-        end
-      end
+      @client = Twitter::REST::Client.new (ConfigClassGenerator.get_one :oauth)
     end
 
     def tweet message

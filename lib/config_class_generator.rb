@@ -4,8 +4,6 @@ class ConfigClassGenerator
   class Config
     def initialize
       @setting = {}
-      @@members ||= []
-      @@members << self
     end
 
     ##
@@ -28,6 +26,14 @@ class ConfigClassGenerator
         raise KeyError, "key not found: #{name}"
       end
     end
+
+    def each default=false, &b
+      if default
+        @@default.merge(@setting).each &b
+      else
+        @setting.each &b
+      end
+    end
   end
 
   attr_reader :name, :klass
@@ -40,6 +46,12 @@ class ConfigClassGenerator
     @klass = Class.new(Config)
     @default = {}
     @klass.class_variable_set :@@default, @default
+    members = []
+    @klass.class_variable_set :@@members, members
+    @klass.__send__ :define_method, :initialize, ->() do
+      members << self
+      super()
+    end
     @name = name.freeze
     @@configs ||= {}
     @@configs[@name] = self
@@ -53,7 +65,7 @@ class ConfigClassGenerator
 
   ##
   # |name Symbol
-  # |array:? boolean
+  # |multi:? boolean
   # |arity:? <def ===(Integer)> | :zero_or_more | :one_or_more
   # |default:? object(&nil) | WillNotSet
   # => void
@@ -70,7 +82,7 @@ class ConfigClassGenerator
     raise ArgumentError, 'arity must be 1 when not multi' if multi && arity != 1
 
     if multi
-      @klass.__send__ :define_method, name, &->(*vals) do
+      @klass.__send__ :define_method, name, ->(*vals) do
         if arity === vals.length
           @setting[name] = vals
         else
@@ -78,7 +90,9 @@ class ConfigClassGenerator
         end
       end
     else
-      @klass.__send__ :define_method, name, &->(val){ @setting[name] = val }
+      @klass.__send__ :define_method, name, ->(val) do
+        @setting[name] = val
+      end
     end
   end
 
