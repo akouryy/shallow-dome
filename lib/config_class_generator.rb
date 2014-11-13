@@ -4,6 +4,8 @@ class ConfigClassGenerator
   class Config
     def initialize
       @setting = {}
+      @@members ||= []
+      @@members << self
     end
 
     ##
@@ -75,13 +77,26 @@ class ConfigClassGenerator
     end
   end
 
-  def self.configure name, &b
-    c = class_variable_get(:@@configs).fetch(name).klass.new
-    c.instance_eval &b
-    c
-  end
+  class << self
+    alias generate new
 
-  def self.load filename
-    class_eval File.read filename
+    def configure name, &b
+      c = class_variable_get(:@@configs).fetch(name).klass.new
+      c.instance_eval &b
+    end
+    private :configure
+
+    def load filename
+      class_eval File.read filename
+      nil
+    end
+
+    def get name
+      class_variable_get(:@@configs).fetch(name).klass.__send__ :class_variable_get, :@@members
+    end
+
+    def get_one name
+      get(name)[-1]
+    end
   end
 end
