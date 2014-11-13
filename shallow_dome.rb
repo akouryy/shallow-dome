@@ -14,4 +14,6 @@ ShallowDome::ConfigManager.load_configs
 
 c = ShallowDome::Client.new
 
-t = c.tweet "test"
+3.times do
+  c.tweet "3連ツイートのテスト", retry_with_space: true
+end

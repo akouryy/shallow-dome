@@ -37,12 +37,28 @@ module ShallowDome
       end
     end
 
-    def initialize filepath = './config/oauth.rb'
+    Space = "\u200c".freeze
+
+    def initialize
       @client = Twitter::REST::Client.new (ConfigClassGenerator.get_one :oauth)
     end
 
-    def tweet message
-      @client.update message
+    def tweet message, retry_times: 0, retry_with_space: false
+      retry_count = 0
+      begin
+        @client.update! message
+      rescue Twitter::Error::DuplicateStatus
+        retry_count += 1
+        if retry_count <= retry_times
+          retry
+        elsif retry_with_space
+          retry_count = 0
+          message += Space
+          retry
+        else
+          raise
+        end
+      end
     end
   end
 end
