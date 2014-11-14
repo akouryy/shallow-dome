@@ -1,11 +1,5 @@
 # encoding utf-8
 
-require 'bundler'
-Bundler.require
-require './lib/browser'
-require './lib/config_class_generator'
-require './lib/symbol_plus'
-
 module ShallowDome
   class ConfigManager
     ConfigClasses = []
