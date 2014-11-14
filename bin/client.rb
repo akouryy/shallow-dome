@@ -13,7 +13,7 @@ module ShallowDome
       end
 
       def load_configs
-        set_classes unless (ConfigClasses - @added_class).empty?
+        set_classes
         Dir.glob 'config/*.rb' do |x|
           ConfigClassGenerator.load x
         end
