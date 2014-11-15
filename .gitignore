@@ -1,3 +1,5 @@
 .bundle
 Gemfile.lock
 lib/bundler
+config/oauth1.rb
+config/style.rb-
